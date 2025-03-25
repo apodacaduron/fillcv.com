@@ -1,8 +1,9 @@
 
 import React from 'react';
+
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 
 interface ProcessOptionsProps {
@@ -61,11 +62,6 @@ const ProcessOptions = ({
         <p className="text-sm text-muted-foreground mt-2">
           Adding a target position helps us tailor the content specifically for that role
         </p>
-      </div>
-      
-      <div className="flex items-center space-x-2">
-        <Switch id="ats-optimize" />
-        <Label htmlFor="ats-optimize">Optimize for ATS (Applicant Tracking Systems)</Label>
       </div>
     </div>
   );
