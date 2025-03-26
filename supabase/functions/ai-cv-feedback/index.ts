@@ -18,7 +18,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { text } = await req.json();
+    const { text, target } = await req.json();
 
     if (!text) {
       return new Response(JSON.stringify({ error: "CV text is required" }), {
@@ -29,7 +29,9 @@ Deno.serve(async (req) => {
     const genAI = new GoogleGenerativeAI(geminiApiKey!);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Review the following CV and provide constructive feedback for improvement:\n\n${text}`;
+    const prompt = `The user is trying to apply to the following target position: \n${
+      target ?? "NOT PROVIDED"
+    }.\n\n Review the following CV and provide constructive feedback for improvement:\n${text}.`;
     const result = await model.generateContent(prompt);
     const response = await result.response;
 

@@ -11,8 +11,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-start">
-              <span className="text-xl font-bold">CVTailor</span>
-              <span className="text-primary ml-1 font-light">Box</span>
+              <span className="text-xl">Fill</span>
+              <span className="text-xl text-primary font-bold">CV</span>
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               AI-powered CV optimization and generation to help you land your dream job.
@@ -70,7 +70,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-200/50 mt-10 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} CVTailorBox. All rights reserved.
+            © {currentYear} FillCV. All rights reserved.
           </p>
           
           <div className="flex space-x-6 mt-4 md:mt-0">
