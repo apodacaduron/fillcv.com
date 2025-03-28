@@ -1,17 +1,15 @@
 
+import { ArrowRight } from 'lucide-react';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Card,
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import {
+    Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
+} from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
+
 import CVUploadForm from './CVUploadForm';
 import ProcessOptions from './ProcessOptions';
 import TemplateSelection from './TemplateSelection';
@@ -25,9 +23,11 @@ const DashboardContent = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    await supabase.functions.invoke('ai-cv-feedback', { body: { file, target: '' } })
     
     // Simulate processing delay
     setTimeout(() => {

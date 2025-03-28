@@ -1,11 +1,13 @@
 
+import { FileText, Upload } from 'lucide-react';
 import React, { ChangeEvent } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Upload, FileText } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CVUploadFormProps {
   uploadMethod: 'upload' | 'text';
@@ -45,7 +47,6 @@ const CVUploadForm = ({ uploadMethod, setUploadMethod, file, setFile }: CVUpload
               id="cv-upload" 
               type="file" 
               accept=".pdf,.doc,.docx,.txt" 
-              className="hidden"
               onChange={handleFileChange}
             />
             <Label htmlFor="cv-upload" asChild>
@@ -143,7 +144,5 @@ const CVUploadForm = ({ uploadMethod, setUploadMethod, file, setFile }: CVUpload
     </>
   );
 };
-
-import { Button } from '@/components/ui/button';
 
 export default CVUploadForm;
