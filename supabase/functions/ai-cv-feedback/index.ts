@@ -7,9 +7,18 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 
 import { GoogleGenerativeAI } from 'npm:@google/generative-ai';
 
-import { corsHeaders } from '../_shared/cors';
+import { corsHeaders } from '../_shared/cors.ts';
 
 const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < bytes.length; i += 1024) {
+    binary += String.fromCharCode(...bytes.slice(i, i + 1024));
+  }
+  return btoa(binary);
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -19,7 +28,7 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method Not Allowed" }), {
       status: 405,
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...corsHeaders  },
     });
   }
 
@@ -43,7 +52,7 @@ Deno.serve(async (req) => {
       const response = await result.response;
 
       return new Response(JSON.stringify({ feedback: response.text() }), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders  },
       });
     } else if (contentType?.includes("multipart/form-data")) {
       // Handle file upload (PDF)
@@ -56,7 +65,7 @@ Deno.serve(async (req) => {
           JSON.stringify({ error: "Only PDF files are supported" }),
           {
             status: 400,
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...corsHeaders  },
           }
         );
       }
@@ -72,7 +81,7 @@ Deno.serve(async (req) => {
         {
           inlineData: {
             mimeType: "application/pdf",
-            data: Buffer.from(fileBuffer).toString("base64"),
+            data: arrayBufferToBase64(fileBuffer),
           },
         },
       ];
@@ -82,20 +91,21 @@ Deno.serve(async (req) => {
       const result = await model.generateContent(contents);
       const response = await result.response;
       return new Response(JSON.stringify({ feedback: response.text() }), {
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...corsHeaders  },
       });
     } else {
       return new Response(
         JSON.stringify({ error: "Unsupported content type" }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...corsHeaders  },
         }
       );
     }
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
+      headers: corsHeaders 
     });
   }
 });

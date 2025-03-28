@@ -1,15 +1,9 @@
-
-import React from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import DashboardContent from './components/DashboardContent';
 
 const Dashboard = () => {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Header />
-      
-      <main className="flex-grow pt-24 pb-16">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b">
+      <main className="flex-grow">
         <div className="container px-4 mx-auto">
           <div className="max-w-5xl mx-auto">
             <div className="mb-8 animate-fade-up">
@@ -23,8 +17,6 @@ const Dashboard = () => {
           </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

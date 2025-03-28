@@ -27,7 +27,15 @@ const DashboardContent = () => {
     e.preventDefault();
     setLoading(true);
 
-    await supabase.functions.invoke('ai-cv-feedback', { body: { file, target: '' } })
+    if (uploadMethod === 'upload') {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('target', '')
+      await supabase.functions.invoke('ai-cv-feedback', { body: formData })
+    } else {
+      await supabase.functions.invoke('ai-cv-feedback', { body: { text: 'This is my CV :)', target: '' } })
+
+    }
     
     // Simulate processing delay
     setTimeout(() => {
