@@ -1,17 +1,18 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
-  user: User;
+  user: User | null;
   loading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<AuthContextType['user']>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

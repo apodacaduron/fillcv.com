@@ -1,6 +1,6 @@
 
 import { FileText, Upload } from 'lucide-react';
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useRef } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,6 +17,8 @@ interface CVUploadFormProps {
 }
 
 const CVUploadForm = ({ uploadMethod, setUploadMethod, file, setFile }: CVUploadFormProps) => {
+  const fileInputRef = useRef(null);
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
@@ -38,15 +40,17 @@ const CVUploadForm = ({ uploadMethod, setUploadMethod, file, setFile }: CVUpload
         </TabsList>
         
         <TabsContent value="upload" className="space-y-4">
-          <div className="border-2 border-dashed rounded-lg p-8 text-center bg-gray-50/50">
+          <div className="border-2 border-dashed rounded-lg p-8 text-center bg-gray-50/50" onClick={() => fileInputRef.current?.click()}>
             <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-1">Upload your CV</h3>
             <p className="text-muted-foreground text-sm mb-4">PDF format recommended (max 5MB)</p>
             
             <Input 
+              ref={fileInputRef}
               id="cv-upload" 
               type="file" 
-              accept=".pdf,.doc,.docx,.txt" 
+              accept=".pdf,.doc,.docx,.txt"
+              className="hidden"
               onChange={handleFileChange}
             />
             <Label htmlFor="cv-upload" asChild>

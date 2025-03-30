@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
@@ -11,6 +11,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +23,17 @@ const Header = () => {
   }, []);
 
   const isActive = (path: string) => location.pathname === path;
+
+  function navigateToDashboard() {
+    if (auth.user) {
+      navigate("/dashboard");
+    } else {
+      supabase.auth.signInWithOAuth({
+        provider: "google",
+      });
+    }
+    setMobileMenuOpen(false);
+  }
 
   return (
     <header
@@ -82,8 +94,8 @@ const Header = () => {
               Sign In
             </Button>
           )}
-          <Button size="sm" asChild>
-            <Link to="/dashboard">Get Started</Link>
+          <Button size="sm" onClick={() => navigateToDashboard()}>
+            Get Started
           </Button>
         </div>
 
@@ -159,7 +171,7 @@ const Header = () => {
               </Link>
             </Button>
             <Button className="w-full justify-center" asChild>
-              <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/dashboard" onClick={() => navigateToDashboard()}>
                 Get Started
               </Link>
             </Button>

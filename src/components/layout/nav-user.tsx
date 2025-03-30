@@ -10,6 +10,7 @@ import {
 import {
     SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar
 } from '@/components/ui/sidebar';
+import { supabase } from '@/lib/supabase';
 
 export function NavUser({
   user,
@@ -21,6 +22,10 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  
+  async function logOut() {
+    await supabase.auth.signOut()
+  }
 
   return (
     <SidebarMenu>
@@ -65,7 +70,7 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {/* <DropdownMenuGroup>
               <DropdownMenuItem>
                 <UserCircleIcon />
                 Account
@@ -79,8 +84,8 @@ export function NavUser({
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuSeparator /> */}
+            <DropdownMenuItem onClick={() => logOut()}>
               <LogOutIcon />
               Log out
             </DropdownMenuItem>

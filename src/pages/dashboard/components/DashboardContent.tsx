@@ -34,7 +34,6 @@ const DashboardContent = () => {
       await supabase.functions.invoke('ai-cv-feedback', { body: formData })
     } else {
       await supabase.functions.invoke('ai-cv-feedback', { body: { text: 'This is my CV :)', target: '' } })
-
     }
     
     // Simulate processing delay
