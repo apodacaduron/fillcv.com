@@ -72,9 +72,10 @@ Deno.serve(async (req) => {
       const parsedResponse = JSON.parse(response.text().replace(/^```json\s|\s```$/g, '')); // Parse AI-generated JSON
       
       const resume = await supabase.from("resumes").insert({ ...parsedResponse.structure, user_id: userId }).select().single()
-      await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id })
+      const feedback = await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id }).select().single()
+      await supabase.from('conversations').insert({ sender: "model", user_id: userId, feedback_id: feedback?.data?.id, message: parsedResponse.feedback })
 
-      return new Response(JSON.stringify(parsedResponse), {
+      return new Response(JSON.stringify(feedback.data), {
         headers: { "Content-Type": "application/json", ...corsHeaders  },
       });
     } else if (contentType?.includes("multipart/form-data")) {
@@ -133,9 +134,10 @@ Deno.serve(async (req) => {
       const parsedResponse = JSON.parse(response.text().replace(/^```json\s|\s```$/g, '')); // Parse AI-generated JSON
 
       const resume = await supabase.from("resumes").insert({ ...parsedResponse.structure, user_id: userId }).select().single()
-      await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id  })
+      const feedback = await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id  }).select().single()
+      await supabase.from('conversations').insert({ sender: "model", user_id: userId, feedback_id: feedback?.data?.id, message: parsedResponse.feedback })
 
-      return new Response(JSON.stringify(parsedResponse), {
+      return new Response(JSON.stringify(feedback), {
         headers: { "Content-Type": "application/json", ...corsHeaders  },
       });
     } else {
