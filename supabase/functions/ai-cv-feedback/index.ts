@@ -8,6 +8,8 @@ import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { GoogleGenerativeAI } from 'npm:@google/generative-ai';
 
 import { corsHeaders } from '../_shared/cors.ts';
+import { structureAndFeedback } from '../_shared/resume.ts';
+import { supabase } from '../_shared/supabaseClient.ts';
 
 const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
 
@@ -33,25 +35,46 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get('Authorization')!;
+    const token = authHeader.replace('Bearer ', '');
+    const { data } = await supabase.auth.getUser(token);
+    const userId = data?.user?.id;
     const contentType = req.headers.get("content-type");
 
-    let text = "";
     let target = "";
 
     if (contentType?.includes("application/json")) {
       // Handle JSON input (text-based CV)
       const body = await req.json();
-      text = body.text;
+      const userResume = body.resume;
       target = body.target || "NOT PROVIDED";
+
+      if (!userResume?.personal_info || !userResume?.experience || !userResume?.education || !userResume?.languages) {
+        return new Response(JSON.stringify({ error: "Missing resume information" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders  },
+        });
+      }
 
       const genAI = new GoogleGenerativeAI(geminiApiKey!);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-      const prompt = `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive feedback for improvement:\n${text}.`;
-      const result = await model.generateContent(prompt);
+      
+      
+      const result = await model.generateContent(`The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV fields from the user and provide him some constructive feedback for improvement:\n${JSON.stringify(userResume)}.
+      
+      Additionally, based on user information arrange it in the following structure shared below, for the structure key the information i gave you has dummy text please replace it with the information given and if something is missing just leave it blank 
+      
+      The response must be in JSON format with the following structure:
+      
+      ${JSON.stringify(structureAndFeedback)}
+      `);
       const response = await result.response;
+      const parsedResponse = JSON.parse(response.text().replace(/^```json\s|\s```$/g, '')); // Parse AI-generated JSON
+      
+      const resume = await supabase.from("resumes").insert({ ...parsedResponse.structure, user_id: userId }).select().single()
+      await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id })
 
-      return new Response(JSON.stringify({ feedback: response.text() }), {
+      return new Response(JSON.stringify(parsedResponse), {
         headers: { "Content-Type": "application/json", ...corsHeaders  },
       });
     } else if (contentType?.includes("multipart/form-data")) {
@@ -59,6 +82,17 @@ Deno.serve(async (req) => {
       const formData = await req.formData();
       const targetValue = formData.get("target");
       const file = formData.get("file") as File;
+
+      const MAX_FILE_SIZE = 2 * 1024 * 1024;
+      if (file.size > MAX_FILE_SIZE) {
+        return new Response(
+          JSON.stringify({ error: "File size exceeds 2MB limit" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
 
       if (!file || file.type !== "application/pdf") {
         return new Response(
@@ -74,9 +108,18 @@ Deno.serve(async (req) => {
 
       const fileBuffer = await file.arrayBuffer();
 
-      const contents = [
+      const genAI = new GoogleGenerativeAI(geminiApiKey!);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent([
         {
-          text: `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive feedback for improvement based on the provided file`,
+          text: `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive feedback for improvement based on the provided file. 
+                
+                Additionally, based on the PDF extract the information and arrange it in the following structure shared below, for the structure key the information i gave you has dummy text please replace it with the information given and if something is missing just leave it blank 
+                
+                The response must be in JSON format with the following structure:
+                
+                ${JSON.stringify(structureAndFeedback)}
+                `,
         },
         {
           inlineData: {
@@ -84,13 +127,15 @@ Deno.serve(async (req) => {
             data: arrayBufferToBase64(fileBuffer),
           },
         },
-      ];
-
-      const genAI = new GoogleGenerativeAI(geminiApiKey!);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent(contents);
+      ]);
       const response = await result.response;
-      return new Response(JSON.stringify({ feedback: response.text() }), {
+      console.log(response.text())
+      const parsedResponse = JSON.parse(response.text().replace(/^```json\s|\s```$/g, '')); // Parse AI-generated JSON
+
+      const resume = await supabase.from("resumes").insert({ ...parsedResponse.structure, user_id: userId }).select().single()
+      await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id  })
+
+      return new Response(JSON.stringify(parsedResponse), {
         headers: { "Content-Type": "application/json", ...corsHeaders  },
       });
     } else {

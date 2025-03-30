@@ -1,4 +1,8 @@
 {
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.ns", "dom"]
+  },
   "imports": {
     "@google/generative-ai": "npm:@google/generative-ai@^0.24.0"
   }
