@@ -23,12 +23,12 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
       icon: LayoutDashboardIcon,
     },
     {
       title: "Feedbacks (Coming soon)",
-      url: "#",
+      url: "/feedbacks",
       icon: ListIcon,
     },
     {
