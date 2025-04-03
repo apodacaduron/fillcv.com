@@ -60,11 +60,11 @@ Deno.serve(async (req) => {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
       
-      const result = await model.generateContent(`The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV fields from the user and provide him some constructive feedback for improvement:\n${JSON.stringify(userResume)}.
+      const result = await model.generateContent(`The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV fields from the user and provide him some constructive professional for improvement:\n${JSON.stringify(userResume)}.
       
       Additionally, based on user information arrange it in the following structure shared below, for the structure key the information i gave you has dummy text please replace it with the information given and if something is missing just leave it blank 
       
-      The response must be in JSON format with the following structure:
+      The response must be in JSON format with the following structure and add a short feedback title:
       
       ${JSON.stringify(structureAndFeedback)}
       `);
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       const parsedResponse = JSON.parse(response.text().replace(/^```json\s|\s```$/g, '')); // Parse AI-generated JSON
       
       const resume = await supabase.from("resumes").insert({ ...parsedResponse.structure, user_id: userId }).select().single()
-      const feedback = await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id }).select().single()
+      const feedback = await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, feedback_title: parsedResponse.feedback_title, user_id: userId, resume_id: resume?.data?.id }).select().single()
       await supabase.from('conversations').insert({ sender: "model", user_id: userId, feedback_id: feedback?.data?.id, message: parsedResponse.feedback })
 
       return new Response(JSON.stringify(feedback.data), {
@@ -113,11 +113,11 @@ Deno.serve(async (req) => {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent([
         {
-          text: `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive feedback for improvement based on the provided file. 
+          text: `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive professional feedback for improvement based on the provided file. 
                 
                 Additionally, based on the PDF extract the information and arrange it in the following structure shared below, for the structure key the information i gave you has dummy text please replace it with the information given and if something is missing just leave it blank 
                 
-                The response must be in JSON format with the following structure:
+                The response must be in JSON format with the following structure and add a short feedback title:
                 
                 ${JSON.stringify(structureAndFeedback)}
                 `,
@@ -130,11 +130,10 @@ Deno.serve(async (req) => {
         },
       ]);
       const response = await result.response;
-      console.log(response.text())
       const parsedResponse = JSON.parse(response.text().replace(/^```json\s|\s```$/g, '')); // Parse AI-generated JSON
 
       const resume = await supabase.from("resumes").insert({ ...parsedResponse.structure, user_id: userId }).select().single()
-      const feedback = await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, user_id: userId, resume_id: resume?.data?.id  }).select().single()
+      const feedback = await supabase.from('feedbacks').insert({ feedback_text: parsedResponse.feedback, feedback_title: parsedResponse.feedback_title, user_id: userId, resume_id: resume?.data?.id  }).select().single()
       await supabase.from('conversations').insert({ sender: "model", user_id: userId, feedback_id: feedback?.data?.id, message: parsedResponse.feedback })
 
       return new Response(JSON.stringify(feedback), {

@@ -92,5 +92,6 @@ export const resumeExample = {
   
 export const structureAndFeedback = {
     structure: resumeExample,
-    feedback: ""
+    feedback: "",
+    feedback_title: "",
 }
