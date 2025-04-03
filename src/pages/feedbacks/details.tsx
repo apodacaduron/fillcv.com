@@ -1,6 +1,8 @@
 import Markdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
 
+import FeedbackState from '@/components/FeedbackState';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
@@ -42,6 +44,30 @@ const FeedbackDetails = () => {
                 for your next job opportunity!
               </p>
             </div>
+
+            {conversationsQuery.isError &&
+              !conversationsQuery.data?.pages?.find(Boolean)?.data?.length && (
+                <FeedbackState
+                  imageSrc="/undraw_server-down_lxs9.svg"
+                  title="Something went wrong"
+                  description="We are unable to rerieve your feedbacks, try reloading the page"
+                />
+              )}
+
+            {conversationsQuery.isLoading && (
+              <div className="flex flex-col gap-4">
+                {Array.from({ length: 1 }).map((_, i) => (
+                  <Skeleton
+                    key={`skeleton-${i}`}
+                    className={`p-4 rounded-md w-full max-w-[80%] animate-fade-up ${
+                      !(i % 2)
+                        ? "bg-gray-100 h-[200px]"
+                        : "bg-blue-300 ml-auto h-[100px]"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
 
             <div className="flex flex-col gap-4">
               {conversationsQuery.data?.pages?.map((page, i) => (

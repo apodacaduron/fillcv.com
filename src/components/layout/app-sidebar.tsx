@@ -27,7 +27,7 @@ const data = {
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Feedbacks (Coming soon)",
+      title: "Feedbacks",
       url: "/feedbacks",
       icon: ListIcon,
     },
