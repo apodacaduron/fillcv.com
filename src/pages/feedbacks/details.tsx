@@ -2,19 +2,30 @@ import Markdown from 'react-markdown';
 import { useParams } from 'react-router-dom';
 
 import { supabase } from '@/lib/supabase';
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
 const FeedbackDetails = () => {
   const params = useParams();
-  const conversationQuery = useQuery({
+
+  const PAGE_SIZE = 10; // Número de elementos por página
+
+  const conversationsQuery = useInfiniteQuery({
     queryKey: ["conversation", params?.id],
-    async queryFn() {
-      return await supabase
+    queryFn: async ({ pageParam = 0 }) => {
+      const { data, error } = await supabase
         .from("conversations")
         .select("*, feedbacks(read)")
         .eq("feedback_id", params?.id)
-        .single();
+        .range(pageParam, pageParam + PAGE_SIZE - 1); // Paginar los resultados
+
+      if (error) throw new Error(error.message);
+      return {
+        data,
+        nextPage: data.length === PAGE_SIZE ? pageParam + PAGE_SIZE : null,
+      };
     },
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
   });
 
   return (
@@ -33,12 +44,22 @@ const FeedbackDetails = () => {
             </div>
 
             <div className="flex flex-col gap-4">
-              <div className="bg-gray-100 p-4 rounded-md max-w-[80%]">
-                <Markdown>{conversationQuery?.data?.data?.message}</Markdown>
-              </div>
-              <div className="bg-blue-300 p-4 rounded-md max-w-[80%] ml-auto">
-                <Markdown>{conversationQuery?.data?.data?.message}</Markdown>
-              </div>
+              {conversationsQuery.data?.pages?.map((page, i) => (
+                <div key={i}>
+                  {page?.data?.map((conversation) => (
+                    <div
+                      key={conversation.id}
+                      className={`p-4 rounded-md max-w-[80%] animate-fade-up ${
+                        conversation.sender === "model"
+                          ? "bg-gray-100"
+                          : "bg-blue-300 ml-auto"
+                      }`}
+                    >
+                      <Markdown>{conversation?.message}</Markdown>
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         </div>
