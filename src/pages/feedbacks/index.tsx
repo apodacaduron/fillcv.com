@@ -13,6 +13,7 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
@@ -21,7 +22,9 @@ const Feedbacks = () => {
 
   const [deletingItem, setDeletingItem] =
     React.useState<Tables<"feedbacks"> | null>(null);
+
   const navigate = useNavigate();
+  const { toast } = useToast();
   const feedbacksQuery = useInfiniteQuery({
     queryKey: ["feedbacks"],
     queryFn: async ({ pageParam = 0 }) => {
@@ -50,6 +53,13 @@ const Feedbacks = () => {
       setDeletingItem(null);
       feedbacksQuery.refetch();
     },
+    onError(error) {
+      toast({
+        title: "Uh oh! Something went wrong.",
+        description: error?.message ?? "There was a problem with your request.",
+        variant: "destructive",
+      });
+    },
   });
 
   function openDeleteFeedbackDialog(
@@ -72,18 +82,24 @@ const Feedbacks = () => {
               </p>
             </div>
 
-            {feedbacksQuery.isError && !feedbacksQuery.data?.pages?.find(Boolean)?.data?.length && <FeedbackState
-              imageSrc="/undraw_server-down_lxs9.svg"
-              title='Something went wrong'
-              description='We are unable to rerieve your feedbacks, try reloading the page'
-            />}
-            {feedbacksQuery.isSuccess && !feedbacksQuery.data?.pages?.find(Boolean)?.data?.length && <FeedbackState
-              imageSrc="/undraw_add-notes_9xls.svg"
-              actionText="New feedback"
-              title='No feedbacks yet'
-              description='Upload your resume and get AI Feedback'
-              onAction={() => navigate("/dashboard")}
-            />}
+            {feedbacksQuery.isError &&
+              !feedbacksQuery.data?.pages?.find(Boolean)?.data?.length && (
+                <FeedbackState
+                  imageSrc="/undraw_server-down_lxs9.svg"
+                  title="Something went wrong"
+                  description="We are unable to rerieve your feedbacks, try reloading the page"
+                />
+              )}
+            {feedbacksQuery.isSuccess &&
+              !feedbacksQuery.data?.pages?.find(Boolean)?.data?.length && (
+                <FeedbackState
+                  imageSrc="/undraw_add-notes_9xls.svg"
+                  actionText="New feedback"
+                  title="No feedbacks yet"
+                  description="Upload your resume and get AI Feedback"
+                  onAction={() => navigate("/dashboard")}
+                />
+              )}
 
             {feedbacksQuery.isLoading && (
               <div className="grid gap-4 mt-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-fade-up">
@@ -98,50 +114,48 @@ const Feedbacks = () => {
 
             {feedbacksQuery.isSuccess && (
               <div className="grid gap-4 mt-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 animate-fade-up">
-                {feedbacksQuery.data?.pages?.map((page, i) => (
-                  <div key={i}>
-                    {page?.data?.map((feedback) => (
-                      <Link
-                        to={`/feedbacks/${feedback.id}`}
-                        key={feedback.id}
-                        className="bg-white dark:bg-neutral-800 shadow-md p-4 rounded-lg border dark:border-neutral-700 hover:shadow-lg transition relative block"
-                      >
-                        {/* Card Header */}
-                        <div className="flex justify-between items-center mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg flex items-center gap-2 line-clamp-2 leading-tight mb-3">
-                              {feedback.feedback_title}
-                            </h3>
-                            <span className="text-xs text-gray-500 dark:text-neutral-500 line-clamp-4">
-                              <Markdown>{feedback.feedback_text}</Markdown>
-                            </span>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                size="icon"
-                                className="absolute -top-4 -right-4"
-                              >
-                                <MoreVertical />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem
-                                onClick={(event) =>
-                                  openDeleteFeedbackDialog(event, feedback)
-                                }
-                                className="text-red-400"
-                              >
-                                <Trash className="h-4" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                {feedbacksQuery.data?.pages
+                  ?.flatMap((page) => page?.data || [])
+                  .map((feedback) => (
+                    <Link
+                      to={`/feedbacks/${feedback.id}`}
+                      key={feedback.id}
+                      className="bg-white dark:bg-neutral-800 shadow-md p-4 rounded-lg border dark:border-neutral-700 hover:shadow-lg transition relative inline-block"
+                    >
+                      {/* Card Header */}
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
+                          <h3 className="font-semibold text-lg flex items-center gap-2 line-clamp-2 leading-tight mb-3">
+                            {feedback.feedback_title}
+                          </h3>
+                          <span className="text-xs text-gray-500 dark:text-neutral-500 line-clamp-4">
+                            <Markdown>{feedback.feedback_text}</Markdown>
+                          </span>
                         </div>
-                      </Link>
-                    ))}
-                  </div>
-                ))}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="icon"
+                              className="absolute -top-4 -right-4"
+                            >
+                              <MoreVertical />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onClick={(event) =>
+                                openDeleteFeedbackDialog(event, feedback)
+                              }
+                              className="text-red-400"
+                            >
+                              <Trash className="h-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </Link>
+                  ))}
               </div>
             )}
 

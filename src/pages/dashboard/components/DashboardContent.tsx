@@ -1,14 +1,16 @@
 import { ArrowRight } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import FullPageSpinner from '@/components/FullPageSpinner';
+import FullPageLoader from '@/components/FullPageLoader';
 import { Button } from '@/components/ui/button';
 import {
     Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle
 } from '@/components/ui/card';
+import { loadingMessages } from '@/data/loading-messages';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
+import { pickRandomFromArray } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 
 import CVUploadForm from './CVUploadForm';
@@ -16,6 +18,8 @@ import ProcessOptions from './ProcessOptions';
 import TemplateSelection from './TemplateSelection';
 
 const DashboardContent = () => {
+  const [title, setTitle] = useState(pickRandomFromArray(loadingMessages.titles));
+  const [description, setDescription] = useState(pickRandomFromArray(loadingMessages.subtitles));
   const [uploadMethod, setUploadMethod] = useState<"upload" | "text">("upload");
   const [processType, setProcessType] = useState<"feedback" | "generate">(
     "feedback"
@@ -32,11 +36,11 @@ const DashboardContent = () => {
       if (uploadMethod === "upload") {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("target", "");
+        formData.append("target", position);
         return await supabase.functions.invoke("ai-cv-feedback", { body: formData });
       } else {
         return await supabase.functions.invoke("ai-cv-feedback", {
-          body: { text: "This is my CV :)", target: "" },
+          body: { text: "This is my CV :)", target: position },
         });
       }
     },
@@ -47,15 +51,27 @@ const DashboardContent = () => {
     },
     onError(error) {
       toast({
-        title: "Something went wrong",
-        description: error?.message,
+        title: "Uh oh! Something went wrong.",
+        description: error?.message ?? "There was a problem with your request.",
+        variant: "destructive",
       });
     },
   });
 
+  useEffect(() => {
+    if (!submitFormMutation.isPending) return;
+
+    const interval = setInterval(() => {
+      setTitle(pickRandomFromArray(loadingMessages.titles));
+      setDescription(pickRandomFromArray(loadingMessages.subtitles));
+    }, 6000);
+
+    return () => clearInterval(interval); // Limpia el intervalo cuando submitFormMutation.isPending es false
+  }, [submitFormMutation.isPending]);
+
   return (
     <Card className="shadow-sm border-gray-200/70 overflow-hidden animate-fade-up">
-      {submitFormMutation.isPending && <FullPageSpinner />}
+      {submitFormMutation.isPending && <FullPageLoader title={title} description={description} />}
 
       <CardHeader className="bg-gray-50/50">
         <CardTitle>Create or Improve Your CV</CardTitle>

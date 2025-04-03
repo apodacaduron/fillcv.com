@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
 
 interface CVUploadFormProps {
   uploadMethod: "upload" | "text";
@@ -21,9 +22,24 @@ const CVUploadForm = ({
   setFile,
 }: CVUploadFormProps) => {
   const fileInputRef = useRef(null);
+  const { toast } = useToast();
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
+    const file = e.target.files[0];
+
+    if (file) {
+      const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+
+      if (file.size > maxSize) {
+        toast({
+          title: "File Too Large",
+          description: `The selected file exceeds the ${maxSize}MB limit. Please choose a smaller file.`,
+          variant: "destructive",
+        });
+        e.target.value = ""; // Reset input
+        return;
+      }
+
       setFile(e.target.files[0]);
     }
   };
@@ -54,7 +70,7 @@ const CVUploadForm = ({
             <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-1">Upload your CV</h3>
             <p className="text-muted-foreground text-sm mb-4">
-              PDF format recommended (max 5MB)
+              PDF format recommended (max 2MB)
             </p>
 
             <Input

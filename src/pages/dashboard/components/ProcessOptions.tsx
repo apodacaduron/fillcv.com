@@ -1,10 +1,7 @@
 
-import React from 'react';
-
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 
 interface ProcessOptionsProps {
   processType: 'feedback' | 'generate';
@@ -52,7 +49,7 @@ const ProcessOptions = ({
         <Label htmlFor="position">
           Target Position <span className="text-muted-foreground">(Optional)</span>
         </Label>
-        <Input 
+        <Textarea
           id="position" 
           placeholder="e.g. Software Engineer, Marketing Manager, etc." 
           className="mt-1"
