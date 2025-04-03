@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       
       
-      const result = await model.generateContent(`The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV fields from the user and provide him some constructive professional for improvement:\n${JSON.stringify(userResume)}.
+      const result = await model.generateContent(`The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive professional detailed feedback for improvement based on the provided file you can even add examples: \n${JSON.stringify(userResume)}.
       
       Additionally, based on user information arrange it in the following structure shared below, for the structure key the information i gave you has dummy text please replace it with the information given and if something is missing just leave it blank 
       
@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent([
         {
-          text: `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive professional feedback for improvement based on the provided file. 
+          text: `The user is trying to apply to the following target position: \n${target}.\n\n Review the following CV and provide constructive professional detailed feedback for improvement based on the provided file you can even add examples. 
                 
                 Additionally, based on the PDF extract the information and arrange it in the following structure shared below, for the structure key the information i gave you has dummy text please replace it with the information given and if something is missing just leave it blank 
                 
