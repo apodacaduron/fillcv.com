@@ -1,26 +1,24 @@
 
+import { UseFormReturn } from 'react-hook-form';
+
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 
-interface ProcessOptionsProps {
+import { ProcessForm } from './DashboardContent';
+
+type Props = {
   processType: 'feedback' | 'generate';
   setProcessType: (type: 'feedback' | 'generate') => void;
-  position: string;
-  setPosition: (position: string) => void;
+  formInstance: UseFormReturn<ProcessForm, any, undefined>
 }
 
-const ProcessOptions = ({ 
-  processType, 
-  setProcessType, 
-  position, 
-  setPosition 
-}: ProcessOptionsProps) => {
+const ProcessOptions = (props: Props) => {
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium mb-4">What would you like to do?</h3>
-        <RadioGroup defaultValue="feedback" onValueChange={(v) => setProcessType(v as 'feedback' | 'generate')}>
+        <RadioGroup defaultValue="feedback" onValueChange={(v) => props.setProcessType(v as 'feedback' | 'generate')}>
           <div className="flex flex-col space-y-3">
             <div className="flex items-center space-x-3 rounded-lg border p-4">
               <RadioGroupItem value="feedback" id="feedback" />
@@ -46,15 +44,14 @@ const ProcessOptions = ({
       </div>
       
       <div>
-        <Label htmlFor="position">
+        <Label htmlFor="target_position">
           Target Position <span className="text-muted-foreground">(Optional)</span>
         </Label>
         <Textarea
-          id="position" 
+          id="target_position" 
           placeholder="e.g. Software Engineer, Marketing Manager, etc." 
           className="mt-1"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
+          {...props.formInstance.register('target_position')}
         />
         <p className="text-sm text-muted-foreground mt-2">
           Adding a target position helps us tailor the content specifically for that role

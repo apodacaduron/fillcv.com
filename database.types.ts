@@ -52,6 +52,7 @@ export type Database = {
           id: string
           read: boolean | null
           resume_id: string | null
+          target_position: string | null
           user_id: string | null
         }
         Insert: {
@@ -61,6 +62,7 @@ export type Database = {
           id?: string
           read?: boolean | null
           resume_id?: string | null
+          target_position?: string | null
           user_id?: string | null
         }
         Update: {
@@ -70,6 +72,7 @@ export type Database = {
           id?: string
           read?: boolean | null
           resume_id?: string | null
+          target_position?: string | null
           user_id?: string | null
         }
         Relationships: [

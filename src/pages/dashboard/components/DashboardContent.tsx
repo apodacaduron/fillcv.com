@@ -1,5 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 
 import FullPageLoader from '@/components/FullPageLoader';
@@ -17,30 +18,41 @@ import CVUploadForm from './CVUploadForm';
 import ProcessOptions from './ProcessOptions';
 import TemplateSelection from './TemplateSelection';
 
+export type ProcessForm = {
+  target_position: string
+  personal_info?: string
+  summary?: string
+  experience?: string
+  education?: string
+  skills?: string
+  certifications?: string
+  projects?: string
+  languages?: string
+  interests?: string
+}
+
 const DashboardContent = () => {
+  const formInstance = useForm<ProcessForm>();
   const [title, setTitle] = useState(pickRandomFromArray(loadingMessages.titles));
   const [description, setDescription] = useState(pickRandomFromArray(loadingMessages.subtitles));
   const [uploadMethod, setUploadMethod] = useState<"upload" | "text">("upload");
   const [processType, setProcessType] = useState<"feedback" | "generate">(
     "feedback"
   );
-  const [position, setPosition] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("minimal");
   const [file, setFile] = useState<File | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const submitFormMutation = useMutation({
-    mutationFn: async (e: React.FormEvent) => {
-      e.preventDefault();
-
+    mutationFn: async (formValues: ProcessForm) => {
       if (uploadMethod === "upload") {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("target", position);
+        formData.append("target_position", formValues.target_position);
         return await supabase.functions.invoke("ai-cv-feedback", { body: formData });
       } else {
         return await supabase.functions.invoke("ai-cv-feedback", {
-          body: { text: "This is my CV :)", target: position },
+          body: { ...formValues },
         });
       }
     },
@@ -57,6 +69,7 @@ const DashboardContent = () => {
       });
     },
   });
+  const onSubmit = formInstance.handleSubmit((data) => submitFormMutation.mutate(data));
 
   useEffect(() => {
     if (!submitFormMutation.isPending) return;
@@ -80,20 +93,20 @@ const DashboardContent = () => {
         </CardDescription>
       </CardHeader>
 
-      <form onSubmit={submitFormMutation.mutate}>
+      <form onSubmit={onSubmit}>
         <CardContent className="pt-6">
           <CVUploadForm
             uploadMethod={uploadMethod}
             setUploadMethod={setUploadMethod}
             file={file}
             setFile={setFile}
+            formInstance={formInstance}
           />
 
           <ProcessOptions
             processType={processType}
             setProcessType={setProcessType}
-            position={position}
-            setPosition={setPosition}
+            formInstance={formInstance}
           />
 
           {processType === "generate" && (

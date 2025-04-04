@@ -1,5 +1,6 @@
 import { FileText, Upload } from 'lucide-react';
 import React, { ChangeEvent, useRef } from 'react';
+import { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,18 +10,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
-interface CVUploadFormProps {
+import { ProcessForm } from './DashboardContent';
+
+type Props = {
   uploadMethod: "upload" | "text";
   setUploadMethod: (method: "upload" | "text") => void;
   file: File | null;
   setFile: (file: File | null) => void;
+  formInstance: UseFormReturn<ProcessForm, any, undefined>
 }
 
-const CVUploadForm = ({
-  setUploadMethod,
-  file,
-  setFile,
-}: CVUploadFormProps) => {
+const CVUploadForm = (props: Props) => {
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
@@ -40,7 +40,7 @@ const CVUploadForm = ({
         return;
       }
 
-      setFile(e.target.files[0]);
+      props.setFile(e.target.files[0]);
     }
   };
 
@@ -49,7 +49,7 @@ const CVUploadForm = ({
       <Tabs
         defaultValue="upload"
         className="w-full"
-        onValueChange={(v) => setUploadMethod(v as "upload" | "text")}
+        onValueChange={(v) => props.setUploadMethod(v as "upload" | "text")}
       >
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="upload" className="flex items-center gap-2">
@@ -87,12 +87,12 @@ const CVUploadForm = ({
               </Button>
             </Label>
 
-            {file && (
+            {props.file && (
               <div className="mt-4 p-3 bg-primary/10 rounded-lg text-sm flex items-center gap-2">
                 <FileText className="h-4 w-4 text-primary" />
-                <span className="font-medium">{file.name}</span>
+                <span className="font-medium">{props.file.name}</span>
                 <span className="text-muted-foreground ml-auto">
-                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                  {(props.file.size / 1024 / 1024).toFixed(2)} MB
                 </span>
               </div>
             )}
@@ -107,6 +107,7 @@ const CVUploadForm = ({
                 id="personal_info"
                 placeholder="Enter you personal information like full name, email, phone number, website, linkedin"
                 className="mt-1 h-20"
+                {...props.formInstance.register('personal_info')}
               />
             </div>
 
@@ -116,6 +117,7 @@ const CVUploadForm = ({
                 id="summary"
                 placeholder="Enter a summary..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('summary')}
               />
             </div>
 
@@ -125,6 +127,7 @@ const CVUploadForm = ({
                 id="experience"
                 placeholder="Describe your work experience..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('experience')}
               />
             </div>
 
@@ -134,6 +137,7 @@ const CVUploadForm = ({
                 id="education"
                 placeholder="List your educational background..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('education')}
               />
             </div>
 
@@ -143,6 +147,7 @@ const CVUploadForm = ({
                 id="certifications"
                 placeholder="List your educational background..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('certifications')}
               />
             </div>
             <div>
@@ -151,6 +156,7 @@ const CVUploadForm = ({
                 id="projects"
                 placeholder="List your educational background..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('projects')}
               />
             </div>
             <div>
@@ -159,6 +165,7 @@ const CVUploadForm = ({
                 id="languages"
                 placeholder="List your educational background..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('languages')}
               />
             </div>
             <div>
@@ -167,6 +174,7 @@ const CVUploadForm = ({
                 id="interests"
                 placeholder="List your educational background..."
                 className="mt-1 h-20"
+                {...props.formInstance.register('interests')}
               />
             </div>
             <div>
@@ -175,6 +183,7 @@ const CVUploadForm = ({
                 id="skills"
                 placeholder="List your key skills separated by commas..."
                 className="mt-1"
+                {...props.formInstance.register('skills')}
               />
             </div>
           </div>
